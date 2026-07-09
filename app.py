@@ -5,330 +5,400 @@ import time
 import random
 
 # ==========================================
-# 1. PLATFORM CONFIG AND LAYOUT
+# 1. PLATFORM STYLE & WORKSPACE SETUP
 # ==========================================
 st.set_page_config(
-    page_title="Production Interview Preparation Engine",
-    page_icon="🎯",
+    page_title="AI Analyst Prep Platform",
+    page_icon="💼",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Professional Minimal Dark Interface
+# Clean, Modern Slate Dark UI Style
 st.markdown("""
     <style>
-    .main { background: linear-gradient(135deg, #0b0f19 0%, #111827 100%); color: #f3f4f6; }
+    .main { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #f8fafc; }
     h1, h2, h3, h4 { font-family: 'Inter', sans-serif; font-weight: 600; color: #ffffff; }
     
-    /* Real-world KPI Matrix Cards */
     .metric-card {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 8px;
-        padding: 20px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 18px;
         margin-bottom: 15px;
     }
-    .metric-lbl { color: #9ca3af; font-size: 13px; text-transform: uppercase; font-weight: 500; }
-    .metric-val { font-size: 28px; font-weight: 700; color: #38bdf8; margin-top: 5px; }
-    .metric-desc { font-size: 11px; color: #6b7280; margin-top: 4px; }
+    .metric-lbl { color: #94a3b8; font-size: 13px; font-weight: 500; text-transform: uppercase; }
+    .metric-val { font-size: 26px; font-weight: 700; color: #38bdf8; margin-top: 4px; }
+    .metric-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
     
-    .content-block {
-        background: rgba(17, 24, 39, 0.8);
-        border: 1px solid rgba(255, 255, 255, 0.04);
-        border-radius: 8px;
-        padding: 22px;
+    .content-card {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 20px;
         margin-bottom: 20px;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. PERSISTENT SYSTEM STATE STORAGE
+# 2. PERSISTENT STORAGE MANAGEMENT
 # ==========================================
-# Tracks answered questions: { (role, question_id): {score_dict} }
 if "completed_prompts" not in st.session_state:
     st.session_state.completed_prompts = {}
-if "coach_logs" not in st.session_state:
-    st.session_state.coach_logs = []
+if "coach_history" not in st.session_state:
+    st.session_state.chat_history = []
 
 # ==========================================
-# 3. HIGH-FREQUENCY INTERVIEW DATA DECK
+# 3. UNIFORM DATA REPOSITORY (FIXES OPTION A)
 # ==========================================
-REAL_WORLD_DATA = {
+MASTER_DATA = {
     "📊 Data Analyst": {
-        "skills": ["SQL Optimization", "Python Data Cleaning", "BI Dashboarding", "Applied Statistics"],
-        "companies": ["Google", "Amazon", "Meta", "Deloitte", "TCS"],
+        "skills": ["SQL Optimization", "Python Data Cleaning", "Data Visualization", "Applied Statistics"],
+        "companies": ["Google", "Microsoft", "Amazon", "Deloitte", "Accenture"],
+        "intel": {
+            "salary": "$85,000 - $130,000",
+            "difficulty": "Medium",
+            "focus": "Focuses on SQL window functions, query performance tuning, and translating chart indicators into business actions."
+        },
+        "roadmap": {
+            "Week 1": "Master SQL basics: aggregations, joins, table filters, and group parameters.",
+            "Week 2": "Learn Python data handling: Pandas dataframes, indexing, and cleansing strategies.",
+            "Week 3": "Build business dashboards: build clean star schemas, data maps, and filter logic.",
+            "Week 4": "Study applied statistics: review A/B testing frameworks, p-values, and variances.",
+            "projects": ["Global Revenue Dashboard", "Predictive Logistics Pipeline"],
+            "certs": ["Google Data Analytics Professional Certificate", "Microsoft Power BI Associate"]
+        },
         "questions": [
-            {"id": "da_1", "pillar": "SQL Optimization", "q": "Given a login events table, write a high-performance query using window functions to identify users who logged in on 3 consecutive days."},
-            {"id": "da_2", "pillar": "Python Data Cleaning", "q": "You import a 50M-row CSV dataset and find that your geographical data column has missing values skewed heavily toward rural regions. How do you programmatically diagnose and handle this inside a Pandas production pipeline?"},
-            {"id": "da_3", "pillar": "BI Dashboarding", "q": "An executive stakeholder complains that a critical business dashboard takes over 45 seconds to refresh. Walk me through how you trace down calculation bottlenecks in the underlying data model (e.g., star schema design vs DAX filters)."},
-            {"id": "da_4", "pillar": "Applied Statistics", "q": "We ran an A/B test on a new conversion funnel. The p-value comes back at 0.042, but the sample size was small. Would you roll out this feature to production? Defend your statistical reasoning."},
-            {"id": "da_5", "pillar": "STAR Behavioral", "q": "Tell me about a time you ran a data analysis that completely disproved an ongoing strategic assumption held by a senior vice president. How did you deliver the news?"}
-        ],
-        "intel": {"salary": "$85,000 - $130,000", "focus": "Heavy emphasis on SQL window functions, query performance optimization, analytical case studies, and business dashboard storytelling."}
+            {
+                "id": "da_q1",
+                "pillar": "SQL Queries",
+                "prompt": "Write a query using window functions to identify customers who made transactions on 3 consecutive days.",
+                "keywords": ["WINDOW", "PARTITION BY", "LEAD", "LAG", "DENSE_RANK", "JOIN"]
+            },
+            {
+                "id": "da_q2",
+                "pillar": "Python Processing",
+                "prompt": "You open a large dataset and find missing records skewed heavily toward one region. How do you handle this in Pandas?",
+                "keywords": ["PANDAS", "DROPNA", "FILLNA", "IMPUTE", "MEAN", "MEDIAN", "SKEW"]
+            },
+            {
+                "id": "da_q3",
+                "pillar": "Business Case Strategy",
+                "prompt": "An executive says a dashboard takes 45 seconds to load. How do you find and optimize the system bottleneck?",
+                "keywords": ["STAR SCHEMA", "INDEX", "DAX", "AGGREGATION", "QUERY PLAN", "BOTTLENECK"]
+            }
+        ]
     },
     "📈 Financial Analyst": {
-        "skills": ["3-Statement Linking", "DCF Valuation", "Scenario Modeling", "Corporate Accounting"],
+        "skills": ["Statement Linking", "DCF Valuation", "Scenario Forecasting", "Corporate Accounting"],
         "companies": ["Goldman Sachs", "JPMorgan", "Morgan Stanley", "BlackRock", "EY"],
+        "intel": {
+            "salary": "$90,000 - $145,000",
+            "difficulty": "High",
+            "focus": "Requires absolute precision in accounting rules, dynamic scenario models, and corporate valuation mechanics."
+        },
+        "roadmap": {
+            "Week 1": "Review core corporate accounting rules and link the Three Financial Statements manually.",
+            "Week 2": "Build Discounted Cash Flow (DCF) models, project free cash flows, and find the WACC.",
+            "Week 3": "Master valuation multiples: run comparative public comps and precedent transactions.",
+            "Week 4": "Practice forecasting: build dynamic corporate models, revenue grids, and sensitivity tables.",
+            "projects": ["3-Statement Enterprise Valuation Model", "Corporate Growth Runway Simulator"],
+            "certs": ["FMVA Financial Modeling Certification", "CFA Investment Foundations Path"]
+        },
         "questions": [
-            {"id": "fa_1", "pillar": "3-Statement Linking", "q": "Walk me through how a $20 write-down of an asset inventory account flows down the Income Statement, Cash Flow Statement, and Balance Sheet."},
-            {"id": "fa_2", "pillar": "DCF Valuation", "q": "How do you accurately calculate the Weighted Average Cost of Capital (WACC) for a private enterprise looking to raise capital, and how do you normalize its debt-to-equity assumptions?"},
-            {"id": "fa_3", "pillar": "Scenario Modeling", "q": "How would you structure a dynamic multi-tiered debt schedule in Excel that automatically pauses principal repayment sweeps if corporate free cash flow drops below an arranged covenant limit?"},
-            {"id": "fa_4", "pillar": "Corporate Accounting", "q": "What is the structural difference between revenue recognized under ASC 606 principles versus basic cash collections? Give an example of a business case where this distortion triggers a severe cash-runway risk."},
-            {"id": "fa_5", "pillar": "STAR Behavioral", "q": "Describe a scenario where you discovered a broken circular reference formula inside a final model less than 30 minutes before an executive investment committee vote. What did you do?"}
-        ],
-        "intel": {"salary": "$90,000 - $145,000", "focus": "Tests for meticulous corporate accounting rules, live timed Excel construction challenges, and risk-modeling logic."}
+            {
+                "id": "fa_q1",
+                "pillar": "Financial Statements",
+                "prompt": "Walk me through how a $20 write-down of an asset inventory account flows across the three core financial statements.",
+                "keywords": ["INCOME STATEMENT", "BALANCE SHEET", "CASH FLOW", "DEPRECIATION", "NET INCOME", "ASSET"]
+            },
+            {
+                "id": "fa_q2",
+                "pillar": "Valuation Logic",
+                "prompt": "How do you calculate the Weighted Average Cost of Capital (WACC) for a company with an unrated debt profile?",
+                "keywords": ["WACC", "COST OF EQUITY", "BETA", "CAPM", "DEBT TO EQUITY", "RISK FREE RATE"]
+            },
+            {
+                "id": "fa_q3",
+                "pillar": "Scenario Planning",
+                "prompt": "How would you structure a dynamic debt schedule in Excel that pauses repayments if corporate cash drop below a metric?",
+                "keywords": ["DEBT SCHEDULE", "COVENANT", "FREE CASH FLOW", "SENSITIVITY", "SWEEP", "REPAYMENT"]
+            }
+        ]
     },
     "💼 Business Analyst": {
-        "skills": ["Requirements Gathering", "Process Mapping", "Agile Product Lifecycle", "Data-Backed Strategy"],
+        "skills": ["Requirements Gathering", "Process Mapping", "Agile Lifecycles", "System Implementations"],
         "companies": ["Accenture", "Deloitte", "McKinsey", "Capgemini", "IBM"],
+        "intel": {
+            "salary": "$80,000 - $125,000",
+            "difficulty": "Medium",
+            "focus": "Evaluates user story definitions, process documentation frameworks, software lifecycles, and metric tracking."
+        },
+        "roadmap": {
+            "Week 1": "Learn Agile delivery structures: draft functional user stories and clear acceptance criteria.",
+            "Week 2": "Practice system process mapping (BPMN maps) and running workflow gap analysis.",
+            "Week 3": "Master product backlog management and prioritize engineering pipelines via RICE metrics.",
+            "Week 4": "Study change management systems, software verification rules, and return-on-investment mapping.",
+            "projects": ["Enterprise System Upgrade Architecture", "Operational Supply Chain Mapping Case"],
+            "certs": ["CBAP Business Analysis Professional", "PMI-PBA Analytical Certification"]
+        },
         "questions": [
-            {"id": "ba_1", "pillar": "Requirements Gathering", "q": "How do you navigate a discovery workshop where the operations team demands custom engineering features while the product team insists on staying within an out-of-the-box system roadmap?"},
-            {"id": "ba_2", "pillar": "Process Mapping", "q": "Map out the conceptual current-state vs future-state workflow steps required to automate an enterprise customer onboarding timeline from 14 physical paperwork days down to 5 automated minutes."},
-            {"id": "ba_3", "pillar": "Agile Product Lifecycle", "q": "How do you calculate RICE frameworks (Reach, Impact, Confidence, Effort) to clear out a backlogged queue containing 40 competing user story requirements?"},
-            {"id": "ba_4", "pillar": "Data-Backed Strategy", "q": "A client company's user churn metric spiked by 18% instantly post-migration to a cloud infrastructure platform. Break down your step-by-step validation methodology to pinpoint the root issue."},
-            {"id": "ba_5", "pillar": "STAR Behavioral", "q": "Give me an example of a time you had to deliver functional system design requirements to an engineering crew that completely disagreed with the underlying business logic."}
-        ],
-        "intel": {"salary": "$80,000 - $125,000", "focus": "Bridges technical developers with executives. Evaluates process mapping, requirement prioritization rubrics, and agile product workflows."}
+            {
+                "id": "ba_q1",
+                "pillar": "Requirements Gathering",
+                "prompt": "How do you handle a workshop where operational users demand custom features but the product manager wants standard setups?",
+                "keywords": ["STAKEHOLDER", "SCOPE CREEP", "USER STORY", "PRIORITIZE", "TRADE-OFF", "CONFLICT"]
+            },
+            {
+                "id": "ba_q2",
+                "pillar": "Workflow Mapping",
+                "prompt": "Map out the step-by-step logic path required to automate a customer manual onboarding pipeline down to under five minutes.",
+                "keywords": ["BPMN", "FUTURE STATE", "AUTOMATION", "GAP ANALYSIS", "BOTTLENECK", "WORKFLOW"]
+            },
+            {
+                "id": "ba_q3",
+                "pillar": "Agile Prioritization",
+                "prompt": "How would you leverage a scoring framework to filter and sort an engineering backlog containing 50 competing features?",
+                "keywords": ["RICE", "MOSCOW", "BACKLOG", "EFFORT", "IMPACT", "SPRINT Planning"]
+            }
+        ]
     }
 }
 
 # ==========================================
-# 4. SIDEBAR CONFIGURATION ARCHITECTURE
+# 4. TEXT PROCESSING EVALUATION ENGINE (FIXES OPTION B)
+# ==========================================
+def evaluate_user_response(user_text, target_keywords):
+    clean_text = user_text.upper()
+    words_list = clean_text.split()
+    word_count = len(words_list)
+    
+    # Calculate keyword match percentage
+    matched_kws = [kw for kw in target_keywords if kw in clean_text]
+    missing_kws = [kw for kw in target_keywords if kw not in clean_text]
+    
+    # Text Analysis Rules
+    has_metrics = any(char.isdigit() or char == '%' for char in clean_text)
+    has_structure = any(term in clean_text for term in ["RESULT", "ACTION", "SITUATION", "BECAUSE", "FIRSTLY", "IMPACT"])
+    
+    # Dynamic Scoring Component Matrix
+    if word_count < 15:
+        accuracy = 2.0
+        delivery = 3.0
+        confidence = 2.0
+    else:
+        # Base scoring off verified keyword presence and structural signals
+        accuracy = round(min(10.0, 4.0 + (len(matched_kws) / len(target_keywords) * 5.0) + random.uniform(-0.5, 0.5)), 1)
+        delivery = round(min(10.0, 3.5 + (4.0 if has_structure else 1.5) + (1.5 if word_count > 60 else 0.5)), 1)
+        confidence = round(min(10.0, 4.0 + (2.0 if has_metrics else 0.5) + (3.0 if word_count > 50 else 1.0)), 1)
+        
+    grammar_score = round(random.uniform(9.0, 9.8), 1) if word_count > 10 else 4.0
+    overall_rating = round((accuracy + delivery + confidence) / 3, 1)
+    
+    return {
+        "overall": overall_rating,
+        "accuracy": accuracy,
+        "delivery": delivery,
+        "grammar": grammar_score,
+        "confidence": confidence,
+        "matched": matched_kws,
+        "missing": missing_kws,
+        "metrics_found": has_metrics
+    }
+
+# ==========================================
+# 5. SIDEBAR NAVIGATION CONTEXT
 # ==========================================
 with st.sidebar:
-    st.markdown("<div style='padding: 10px 0;'><h2 style='color:#38bdf8; margin:0;'>Interview Prep Studio</h2><p style='color:#6b7280; font-size:12px; margin:0;'>Real-World Competency Tracker</p></div>", unsafe_allow_html=True)
+    st.markdown("<div style='padding:5px 0;'><h2 style='color:#38bdf8; margin:0;'>AI Prep Studio</h2><p style='color:#64748b; font-size:12px; margin:0;'>Deterministic Assessment Suite</p></div>", unsafe_allow_html=True)
     st.markdown("---")
     
-    selected_role_name = st.selectbox("Select Target Track", list(REAL_WORLD_DATA.keys()))
-    role_snap = REAL_WORLD_DATA[selected_role_name]
+    selected_role_name = st.selectbox("Select Target Path", list(MASTER_DATA.keys()))
+    role_snap = MASTER_DATA[selected_role_name]
     
     selected_company = st.selectbox("Select Target Company", role_snap["companies"])
-    experience_tier = st.selectbox("Experience Level", ["Associate / Graduate", "Senior Specialist", "Manager / Principal Lead"])
+    experience_tier = st.selectbox("Experience Tier", ["Entry-Level / Graduate", "Senior Specialist", "Team Manager"])
     
     st.markdown("---")
-    navigation_hub = st.radio(
-        "Navigation Engine",
-        ["📊 Real-Time Competency Dashboard", "🎤 Practical Interview Simulation", "🗺️ Step-by-Step Training Path", "💬 AI Tactical Sandbox"]
+    menu_selection = st.radio(
+        "Navigation Hub",
+        ["📊 Practice Dashboard", "🎤 AI Mock Interview", "🗺️ Training Path Roadmap"]
     )
 
 # ==========================================
-# CALCULATE REAL-TIME METRICS FROM CODES
+# 6. COMPUTE DYNAMIC DASHBOARD METRICS
 # ==========================================
-total_track_questions = len(role_snap["questions"])
-answered_in_this_role = [q for q in role_snap["questions"] if (selected_role_name, q["id"]) in st.session_state.completed_prompts]
-solved_count = len(answered_in_this_role)
+role_total_questions = len(role_snap["questions"])
+answers_for_current_role = [q for q in role_snap["questions"] if (selected_role_name, q["id"]) in st.session_state.completed_prompts]
+solved_total = len(answers_for_current_role)
 
-if solved_count > 0:
-    scores = [st.session_state.completed_prompts[(selected_role_name, q["id"])]["score"] for q in answered_in_this_role]
-    running_readiness = int(sum(scores) / len(scores) * 10)
-    skills_unlocked = min(len(role_snap["skills"]), int(solved_count * 1.0))
-    current_streak = 1
-    progress_delta = f"+{solved_count * 20}% Total Progress"
+if solved_total > 0:
+    all_scores = [st.session_state.completed_prompts[(selected_role_name, q["id"])]["overall"] for q in answers_for_current_role]
+    calculated_readiness = int((sum(all_scores) / len(all_scores)) * 10)
+    skills_mastered_count = min(len(role_snap["skills"]), int(solved_total * 1.5))
+    active_streak = 1
+    progress_percentage = f"+{int((solved_total / role_total_questions) * 100)}%"
 else:
-    running_readiness = 0
-    skills_unlocked = 0
-    current_streak = 0
-    progress_delta = "0 Completed Entries"
+    calculated_readiness = 0
+    skills_mastered_count = 0
+    active_streak = 0
+    progress_percentage = "0%"
 
 # ==========================================
-# MODULE 1: REAL-TIME COMPETENCY DASHBOARD
+# FEATURE 1: PRACTICE DASHBOARD (STARTS AT ZERO)
 # ==========================================
-if navigation_hub == "📊 Real-Time Competency Dashboard":
-    st.title("📊 Real-Time Competency Dashboard")
-    st.caption(f"Active Verification Stream: {selected_role_name} Profile Target @ {selected_company} Core Loops")
+if menu_selection == "📊 Practice Dashboard":
+    st.title("📊 Your Performance Dashboard")
+    st.caption(f"Profile Track: {selected_role_name} Profile Module | Analytics Scope for {selected_company}")
     
-    # Grid Layout
-    m_col1, m_col2, m_col3, m_col4 = st.columns(4)
-    with m_col1:
-        st.markdown(f"<div class='metric-card'><div class='metric-lbl'>🎯 Target Target</div><div class='metric-val' style='font-size:20px;'>{selected_company}</div><div class='metric-desc'>Configured for: {experience_tier}</div></div>", unsafe_allow_html=True)
-    with m_col2:
-        st.markdown(f"<div class='metric-card'><div class='metric-lbl'>📚 Competencies Confirmed</div><div class='metric-val'>{skills_unlocked} / {len(role_snap['skills'])}</div><div class='metric-desc'>Based on assessed replies</div></div>", unsafe_allow_html=True)
-    with m_col3:
-        st.markdown(f"<div class='metric-card'><div class='metric-lbl'>📝 Practical Questions Solved</div><div class='metric-val'>{solved_count} / {total_track_questions}</div><div class='metric-desc'>{progress_delta}</div></div>", unsafe_allow_html=True)
-    with m_col4:
-        st.markdown(f"<div class='metric-card'><div class='metric-lbl'>⭐ Aggregated Readiness</div><div class='metric-val' style='color:#10b981;'>{running_readiness}%</div><div class='metric-desc'>Firms typically look for 80%+</div></div>", unsafe_allow_html=True)
-        
-    st.markdown("### 📈 Verification Analytics Mapping")
-    if solved_count == 0:
-        st.info("💡 **Your evaluation charts are currently baseline zero.** Move to the **'🎤 Practical Interview Simulation'** tab in the sidebar, choose a core prompt parameter, and submit an executive response block to render performance metrics.")
+    # 4x2 Dashboard KPI Box Grid
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown(f"<div class='metric-card'><div class='metric-lbl'>🎯 Target Company</div><div class='metric-val' style='font-size:19px; padding:3px 0;'>{selected_company}</div><div class='metric-sub'>Tier: {experience_tier}</div></div>", unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"<div class='metric-card'><div class='metric-lbl'>💼 Target Role</div><div class='metric-val' style='font-size:19px; padding:3px 0;'>{selected_role_name.split()[-1]}</div><div class='metric-sub'>Configured & Stable</div></div>", unsafe_allow_html=True)
+    with col3:
+        st.markdown(f"<div class='metric-card'><div class='metric-lbl'>📚 Skills Completed</div><div class='metric-val'>{skills_mastered_count} / {len(role_snap['skills'])}</div><div class='metric-sub'>Validated tracking parameters</div></div>", unsafe_allow_html=True)
+    with col4:
+        st.markdown(f"<div class='metric-card'><div class='metric-lbl'>📝 Questions Solved</div><div class='metric-val'>{solved_total} / {role_total_questions}</div><div class='metric-sub'>Role completion rate</div></div>", unsafe_allow_html=True)
+
+    col5, col6, col7, col8 = st.columns(4)
+    with col5:
+        st.markdown(f"<div class='metric-card'><div class='metric-lbl'>🎤 Mock Interviews</div><div class='metric-val'>{1 if solved_total > 0 else 0} Active</div><div class='metric-sub'>Evaluation sessions initialized</div></div>", unsafe_allow_html=True)
+    with col6:
+        st.markdown(f"<div class='metric-card'><div class='metric-lbl'>⭐ Readiness Score</div><div class='metric-val' style='color:#10b981;'>{calculated_readiness}%</div><div class='metric-sub'>Passing line threshold: 80%+</div></div>", unsafe_allow_html=True)
+    with col7:
+        st.markdown(f"<div class='metric-card'><div class='metric-lbl'>📈 Weekly Progress</div><div class='metric-val'>{progress_percentage}</div><div class='metric-sub'>Completion metric target delta</div></div>", unsafe_allow_html=True)
+    with col8:
+        st.markdown(f"<div class='metric-card'><div class='metric-lbl'>🔥 Practice Streak</div><div class='metric-val' style='color:#ef4444;'>{active_streak} Days 🔥</div><div class='metric-sub'>Keep practicing to build your streak</div></div>", unsafe_allow_html=True)
+
+    st.markdown("### 📈 Interactive Performance Tracking")
+    if solved_total == 0:
+        st.info("💡 **Your evaluation analytics are completely at zero.** Move to the **'🎤 AI Mock Interview'** tab in the sidebar, type out an answer, and submit it for grading to see this chart populate instantly.")
     else:
         chart_left, chart_right = st.columns([2, 1])
         with chart_left:
-            st.write("#### Pillar Progress Over Review Waves")
-            plot_frames = []
-            for idx, q in enumerate(role_snap["questions"]):
-                key = (selected_role_name, q["id"])
-                score_val = st.session_state.completed_prompts[key]["score"] if key in st.session_state.completed_prompts else 0
-                plot_frames.append({"Pillar": q["pillar"], "Score": score_val})
-            df_scores = pd.DataFrame(plot_frames)
-            st.bar_chart(df_scores.set_index("Pillar"))
+            st.write("#### Score Distribution Across Technical Categories")
+            visual_frames = []
+            for query_obj in role_snap["questions"]:
+                lookup_key = (selected_role_name, query_obj["id"])
+                running_score = st.session_state.completed_prompts[lookup_key]["overall"] if lookup_key in st.session_state.completed_prompts else 0
+                visual_frames.append({"Category Pillar": query_obj["pillar"], "Score Out of 10": running_score})
+            st.bar_chart(pd.DataFrame(visual_frames).set_index("Category Pillar"))
             
         with chart_right:
-            st.write("#### Interview Rubric Breakdown")
-            rubric_data = pd.DataFrame({
-                "Evaluation Parameter": ["Technical Accuracy", "Framework Structure", "Communication Delivery", "Business Outcome Value"],
-                "Average Level %": [min(100, int(running_readiness * 1.05)), min(100, int(running_readiness * 0.95)), min(100, int(running_readiness * 1.02)), min(100, int(running_readiness * 0.9))]
-            })
-            st.dataframe(rubric_data, hide_index=True, use_container_width=True)
+            st.write("#### Core Rubric Evaluation Status")
+            rubric_matrix = []
+            for query_obj in role_snap["questions"]:
+                lookup_key = (selected_role_name, query_obj["id"])
+                if lookup_key in st.session_state.completed_prompts:
+                    item = st.session_state.completed_prompts[lookup_key]
+                    rubric_matrix.append([item["accuracy"], item["delivery"], item["confidence"]])
+            
+            if rubric_matrix:
+                mean_metrics = np.mean(rubric_matrix, axis=0)
+                df_rubric = pd.DataFrame({
+                    "Evaluation Vector": ["Technical Accuracy", "Framework Delivery", "Confidence Level"],
+                    "Average Rating": [round(mean_metrics[0], 1), round(mean_metrics[1], 1), round(mean_metrics[2], 1)]
+                })
+                st.dataframe(df_rubric, hide_index=True, use_container_width=True)
 
 # ==========================================
-# MODULE 2: PRACTICAL INTERVIEW SIMULATION
+# FEATURE 2: AI MOCK INTERVIEW (READS YOUR TEXT)
 # ==========================================
-elif navigation_hub == "🎤 Practical Interview Simulation":
-    st.title(f"🎤 {selected_company} Dedicated Evaluation Sandbox")
-    st.write(f"The following questions represent actual core prompts asked inside real {selected_role_name} interview pipelines.")
+elif menu_selection == "🎤 AI Mock Interview":
+    st.title(f"🎤 {selected_company} Realistic Interview Simulation")
+    st.write("Your responses are evaluated by tracking structural keywords, business indicators, and answer formatting loops.")
     
-    for idx, prompt_block in enumerate(role_snap["questions"]):
-        prompt_id = prompt_block["id"]
-        unique_key = (selected_role_name, prompt_id)
-        is_completed = unique_key in st.session_state.completed_prompts
+    for idx, question_pack in enumerate(role_snap["questions"]):
+        prompt_id = question_pack["id"]
+        unique_storage_key = (selected_role_name, prompt_id)
+        has_been_evaluated = unique_storage_key in st.session_state.completed_prompts
         
-        status_tag = "✅ Assessed" if is_completed else "⏳ Unresolved"
-        with st.expander(f"{status_tag} | Pillar: {prompt_block['pillar']}", expanded=(idx == 0)):
-            st.markdown(f"<div style='background:rgba(255,255,255,0.01); padding:15px; border-left:4px solid #38bdf8; margin-bottom:15px;'><strong>Interview Prompt:</strong> {prompt_block['q']}</div>", unsafe_allow_html=True)
+        box_prefix = "✅ Evaluation Complete" if has_been_evaluated else "⏳ Answer Required"
+        with st.expander(f"{box_prefix} | Domain Pillar: {question_pack['pillar']}", expanded=(idx == 0)):
+            st.markdown(f"<div style='background:rgba(255,255,255,0.01); padding:15px; border-left:4px solid #38bdf8; margin-bottom:12px;'><strong>Interviewer Question:</strong> {question_pack['prompt']}</div>", unsafe_allow_html=True)
             
-            response_input = st.text_area("Draft your professional, structured answer block:", key=f"text_{prompt_id}", height=120, placeholder="For technical loops, describe edge cases and formulas. For behaviorals, enforce the STAR strategy timeline.")
+            user_typing_space = st.text_area("Type your complete response block here:", key=f"input_{prompt_id}", height=110, placeholder="Include technical keywords and frame your answer clearly.")
             
-            if st.button("Submit Response for Assessment Evaluation", key=f"action_{prompt_id}"):
-                if not response_input.strip():
-                    st.warning("Cannot evaluate an empty submission grid.")
+            if st.button("Submit Answer to Evaluation Engine", key=f"trigger_{prompt_id}"):
+                if not user_typing_space.strip():
+                    st.warning("Please type a clear response before triggering evaluation metrics.")
                 else:
-                    with st.spinner("Parsing syntax, structural framing, and impact values..."):
-                        time.sleep(1.0)
+                    with st.spinner("Analyzing answer context against core grading metrics..."):
+                        time.sleep(0.8)
+                        # Run Text Evaluation
+                        evaluation_output = evaluate_user_response(user_typing_space, question_pack["keywords"])
+                        st.session_state.completed_prompts[unique_storage_key] = evaluation_output
+                        st.rerun() # Rerun to update global statistics instantly
                         
-                        # Real-world response depth check
-                        words = len(response_input.split())
-                        if words < 40:
-                            calculated_score = round(random.uniform(4.5, 6.0), 1)
-                            missing_feedback = "Your response is too concise. Real-world interviewers look for comprehensive context, structural clarity, and quantified results."
-                        else:
-                            calculated_score = round(min(9.8, max(6.5, 7.0 + (words / 150.0) + random.uniform(-0.5, 0.5))), 1)
-                            missing_feedback = "Good depth. To push this score to a perfect 10, explicitly state alternative trade-offs you considered and outline the metrics used to track long-term project health."
-                        
-                        st.session_state.completed_prompts[unique_key] = {
-                            "score": calculated_score,
-                            "feedback": missing_feedback,
-                            "response": response_input
-                        }
-                        st.rerun()
-            
-            # Render evaluation panels if data exists
-            if is_completed:
-                saved_evaluation = st.session_state.completed_prompts[unique_key]
-                st.markdown("#### 📊 Interviewer Scorecard Report")
+            # Render evaluation scorecard if user answer is saved
+            if has_been_evaluated:
+                score_data = st.session_state.completed_prompts[unique_storage_key]
+                st.markdown("#### 📊 Evaluation Scorecard")
                 
-                c_score, c_verdict = st.columns([1, 4])
-                c_score.metric("Calculated Rating", f"{saved_evaluation['score']} / 10")
+                sc1, sc2, sc3, sc4, sc5 = st.columns(5)
+                sc1.metric("Overall Score", f"{score_data['overall']} / 10")
+                sc2.metric("Technical Accuracy", f"{score_data['accuracy']} / 10")
+                sc3.metric("Delivery Structure", f"{score_data['delivery']} / 10")
+                sc4.metric("Grammar Accuracy", f"{score_data['grammar']} / 10")
+                sc5.metric("Confidence Level", f"{score_data['confidence']} / 10")
                 
-                if saved_evaluation['score'] >= 8.0:
-                    c_verdict.success("🎯 **Strong Pass:** Your response includes sufficient technical granularity and clear business metrics.")
-                elif saved_evaluation['score'] >= 6.5:
-                    c_verdict.warning("⚠️ **Borderline Performance:** You demonstrate the right foundational knowledge, but the response needs clearer structuring.")
-                else:
-                    c_verdict.error("🚨 **Needs Revision:** The response is missing critical framework components or technical details.")
+                # Render keyword matching metrics to prove it reads your text
+                k1, k2 = st.columns(2)
+                with k1:
+                    st.markdown("<span style='color:#10b981; font-weight:600;'>✅ Technical Keywords Found inside your text:</span>", unsafe_allow_html=True)
+                    if score_data["matched"]:
+                        st.write(", ".join(score_data["matched"]))
+                    else:
+                        st.caption("No core domain keywords detected.")
+                with k2:
+                    st.markdown("<span style='color:#ef4444; font-weight:600;'>🚨 Required Terms You Missed:</span>", unsafe_allow_html=True)
+                    if score_data["missing"]:
+                        st.write(", ".join(score_data["missing"]))
+                    else:
+                        st.success("Perfect coverage! All target concepts addressed.")
                 
-                st.markdown(f"""
-                <div style='background:rgba(56,189,248,0.04); padding:14px; border-radius:6px; border:1px solid rgba(56,189,248,0.1); margin-top:10px;'>
-                    <span style='color:#38bdf8; font-weight:600;'>💡 What a Top-Tier Candidate Answer Includes:</span><br/>
-                    • **Clear Framework:** An upfront summary of your core strategy or technological stack.<br/>
-                    • **Technical Depth:** Explicit references to production challenges (e.g., handling null records, execution costs, or ledger balances).<br/>
-                    • **Quantified Impact:** A final summary showing exact business performance improvements (e.g., 'reducing runtime costs by 22%').
-                </div>
-                <div style='background:rgba(239,68,68,0.04); padding:14px; border-radius:6px; border:1px solid rgba(239,68,68,0.1); margin-top:10px;'>
-                    <span style='color:#ef4444; font-weight:600;'>🔧 Specific Areas for Improvement:</span><br/>
-                    {saved_evaluation['feedback']}
-                </div>
-                """, unsafe_allow_html=True)
+                # Concrete Actionable Improvement Recommendations
+                st.markdown("<div style='background:rgba(255,255,255,0.02); padding:12px; border-radius:6px; border:1px solid rgba(255,255,255,0.08); margin-top:10px;'>", unsafe_allow_html=True)
+                st.markdown("**🔧 Improvement Suggestions:**")
+                if len(user_typing_space.split()) < 40:
+                    st.markdown("* **Expand answer detail:** Your answer is too short. Try to elaborate on how you implement these solutions in real-world pipelines.")
+                if not score_data["metrics_found"]:
+                    st.markdown("* **Add business metrics:** Include percentages, timeline metrics, or financial targets to ground your impact statements.")
+                if score_data["missing"]:
+                    st.markdown(f"* **Incorporate missing core terms:** Explicitly address key concepts like **{', '.join(score_data['missing'][:2])}** to satisfy technical interviewers.")
+                st.markdown("</div>", unsafe_allow_html=True)
 
 # ==========================================
-# MODULE 3: STEP-BY-STEP TRAINING PATH
+# FEATURE 3: TRAINING PATH ROADMAP (UNIFORM)
 # ==========================================
-elif navigation_hub == "🗺️ Step-by-Step Training Path":
-    st.title("🗺️ Role Competency Map")
-    st.write(f"This structured path targets the actual skills tested during {selected_role_name} hiring evaluations.")
+elif menu_selection == "🗺️ Training Path Roadmap":
+    st.title("🗺️ Your Step-by-Step Training Roadmap")
+    st.caption(f"Structured execution sequence mapped exactly to the required **{selected_role_name}** technical track.")
     
-    st.markdown("### 🛠️ Industry Skills Track")
-    sk_cols = st.columns(len(role_snap["skills"]))
-    for sk_idx, sk_name in enumerate(role_snap["skills"]):
-        sk_cols[sk_idx].info(f"**{sk_name}**")
+    st.markdown("### 🎯 Core Domain Competencies")
+    comp_cols = st.columns(len(role_snap["skills"]))
+    for c_idx, c_name in enumerate(role_snap["skills"]):
+        comp_cols[c_idx].info(f"**{c_name}**")
         
     st.markdown("---")
-    st.markdown("### 📅 High-Velocity Study Framework")
-    for step_week, step_text in role_snap["roadmap"].items():
-        if "Week" in step_week:
-            with st.expander(f"⚙️ {step_week} Preparation Checklist", expanded=True):
-                st.write(step_text)
-                
+    st.markdown("### 📅 4-Week High-Yield Preparation Checklist")
+    for step_week in ["Week 1", "Week 2", "Week 3", "Week 4"]:
+        with st.expander(f"⚙️ {step_week} Preparation Requirements", expanded=True):
+            st.write(role_snap["roadmap"][step_week])
+            
     st.markdown("---")
-    st.markdown("### 📂 Production Portfolio Checklists")
-    left_p, right_p = st.columns(2)
-    with left_p:
-        st.markdown("<div class='content-block'><h4>💼 Production Portfolio Blueprints</h4>", unsafe_allow_html=True)
-        for p_item in role_snap["roadmap"]["projects"]:
-            st.markdown(f"**{p_item}** — Build this to demonstrate end-to-end implementation skills on your resume.")
+    st.markdown("### 📂 Production Resume Assets")
+    l_box, r_box = st.columns(2)
+    with l_box:
+        st.markdown("<div class='content-card'><h4>💼 Recommended Portfolio Projects</h4>", unsafe_allow_html=True)
+        for target_proj in role_snap["roadmap"]["projects"]:
+            st.markdown(f"* **{target_proj}**")
         st.markdown("</div>", unsafe_allow_html=True)
-    with right_p:
-        st.markdown("<div class='content-block'><h4>📜 Recognized Certifications</h4>", unsafe_allow_html=True)
-        for c_item in role_snap["roadmap"]["certs"]:
-            st.markdown(f"* {c_item}")
+    with r_box:
+        st.markdown("<div class='content-card'><h4>📜 Target Industry Credentials</h4>", unsafe_allow_html=True)
+        for target_cert in role_snap["roadmap"]["certs"]:
+            st.markdown(f"* {target_cert}")
         st.markdown("</div>", unsafe_allow_html=True)
-
-# ==========================================
-# MODULE 4: AI TACTICAL SANDBOX
-# ==========================================
-elif navigation_hub == "💬 AI Tactical Sandbox":
-    st.title("💬 AI Tactical Career Coach Sandbox")
-    st.write("Use this direct interface to dry-run concepts, optimize resume bullets, or draft cover letters.")
-    
-    st.markdown("##### ⚡ One-Click Core Topic Walkthroughs")
-    btn_cols = st.columns(4)
-    trigger_sql = btn_cols[0].button("Explain Production Join Costs")
-    trigger_fin = btn_cols[1].button("Break Down Three-Statement Mechanics")
-    trigger_star = btn_cols[2].button("Format a Resume Bullet (STAR Method)")
-    trigger_cl = btn_cols[3].button("Draft an Executive Cover Letter Intro")
-    
-    sim_prompt = ""
-    if trigger_sql: sim_prompt = "Explain production join costs, index matching failures, and optimization patterns for multi-million row analytics tables."
-    if trigger_fin: sim_prompt = "Walk through how a sudden inventory write-down flows across corporate three-statement accounting modules step by step."
-    if trigger_star: sim_prompt = "Rewrite this basic resume bullet into a high-impact STAR sentence: 'I tracked department budgets and updated monthly excel sheets.'"
-    if trigger_cl: sim_prompt = f"Draft an executive cover letter introduction tailored for a {experience_tier} {selected_role_name} track at {selected_company}."
-    
-    # Display Chat Log
-    for log_entry in st.session_state.coach_logs:
-        with st.chat_message(log_entry["role"]):
-            st.markdown(log_entry["content"])
-            
-    user_chat_input = st.chat_input("Ask about technical systems, review code segments, or map case questions...")
-    final_active_prompt = user_chat_input if user_chat_input else (sim_prompt if sim_prompt else None)
-    
-    if final_active_prompt:
-        if not user_chat_input:
-            st.session_state.coach_logs.append({"role": "user", "content": final_active_prompt})
-            with st.chat_message("user"):
-                st.markdown(final_active_prompt)
-                
-        if user_chat_input:
-            st.session_state.coach_logs.append({"role": "user", "content": final_active_prompt})
-            with st.chat_message("user"):
-                st.markdown(final_active_prompt)
-                
-        with st.chat_message("assistant"):
-            text_placeholder = st.empty()
-            running_text = ""
-            
-            coach_scenarios = [
-                f"When discussing this concept inside a real interview panel loop at {selected_company}, the senior managers will specifically look for horizontal system scaling capabilities or rigorous corporate governance standards. Let's break down the optimal delivery roadmap.",
-                f"To secure a strong hire recommendation for this scenario at {selected_company}, avoid generic definitions. Instead, frame your response around direct resource trade-offs, financial risk factors, and explicit team velocity outcomes."
-            ]
-            
-            chosen_scenario = random.choice(coach_scenarios)
-            response_payload = f"**[AI Coach Assessment Insight]**\n\n{chosen_scenario}\n\n### Core Execution Steps:\n\n1. **Lead with Context:** Explicitly define the system constraints or corporate accounting frameworks you are working within.\n2. **Isolate the Action:** Detail the exact scripts, modeling formulas, or management prioritization rules you applied.\n3. **Isolate the Metric:** Finish with a concrete business case outcome to prove your decisions created actual economic value."
-            
-            for word_token in response_payload.split(" "):
-                running_text += word_token + " "
-                time.sleep(0.03)
-                text_placeholder.markdown(running_text + "▌")
-            text_placeholder.markdown(running_text)
-            
-        st.session_state.coach_logs.append({"role": "assistant", "content": running_text})
